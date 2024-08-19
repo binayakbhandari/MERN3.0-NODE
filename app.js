@@ -3,18 +3,20 @@ const express = require('express')
 const connectDatabase = require('./database')
 
 const app = express()
+app.use(express.json())
 
 connectDatabase()
 
-app.get("/", (req, res) => {
+app.get("/", (req, res)=>{
     res.status(200).json({
         message: "Welcome to home page."
     })
 })
 
-app.get("/about", (req, res) => {
-    res.json({
-        message: "Welcome to about page."
+app.post("/blog", (req, res)=>{
+    console.log(req.body)
+    res.status(200).json({
+        message : "Blog API hit sucessfully"
     })
 })
 
