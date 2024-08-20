@@ -22,15 +22,23 @@ app.post("/blog",async (req, res)=>{
     // const image = req.body.image
     // We can do same thing in this way which is called object destructuring
     const {title, subtitle, description, image} = req.body
+    
+    if(!title || !subtitle || !description || !image){
+        return res.status(400).json({
+            message : "Please provide title, subtitle, description or image"
+        })
+    }
+
     await Blog.create({
-        title : title,
-        subtitle : subtitle,
-        description : description,
-        image : image
+        title: title,
+        subtitle: subtitle,
+        description: description,
+        image: image
     })
+
     console.log(title)
     res.status(200).json({
-        message : "Blog API hit sucessfully"
+        message: "Blog API hit sucessfully"
     })
 })
 
