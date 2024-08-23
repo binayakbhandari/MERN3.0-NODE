@@ -7,6 +7,8 @@ const app = express()
 app.use(express.json())
 const {multer,storage} = require('./middleware/multerConfig')
 const upload = multer({storage : storage})
+const fs = require('fs')
+
 connectDatabase()
 
 app.get("/", (req, res)=>{
@@ -45,6 +47,70 @@ app.get("/blog", async (req,res)=>{
     res.status(200).json({
         message : "Blog data fetched successfully",
         data : blogs
+    })
+})
+// API to get blog
+app.get("/blog/:id",async (req,res)=>{
+    const id = req.params.id
+    const blog = await Blog.findById(id) // findById() returns data in an object
+    if(!blog){
+        return res.status(404).json({
+            message : "no data found"
+        })
+    }
+    res.status(200).json({
+        message: "Blog fetched successfully",
+        data : blog
+    })
+})
+// API to delete blog
+app.delete("/blog/:id",async (req,res)=>{
+    const id = req.params.id
+    const blog = await Blog.findById(id)
+    const imageName = blog.image
+        fs.unlink(`./storage/${imageName}`, (err)=>{
+            if(err){
+                console.log(err)
+            }
+            else{
+                console.log("File deleted successfully")
+            }
+        })
+
+
+    await Blog.findByIdAndDelete(id) // FindByIdAndDelete() delete data of that id
+    res.status(200).json({
+        message : "Blog deleted successfully"
+    })
+})
+
+// API to edit blgo
+app.patch("/blog/:id",upload.single('image'), async (req,res)=>{
+    const id = req.params.id
+    const {title,subtitle,description} = req.body
+    let imageName;
+
+    if(req.file){
+        imageName = req.file.filename
+        const blog = Blog.findById(id)
+        const oldImage = blog.image
+        fs.unlink(`./storage/${imageName}`, (err)=>{
+            if(err){
+                console.log(err)
+            }
+            else{
+                console.log("File deleted successfully")
+            }
+        })
+    }
+    await Blog.findByIdAndUpdate(id,{
+        title : title,
+        subtitle : subtitle,
+        description : description,
+        image : imageName
+    })
+    res.status(200).json({
+        message : "Blog updated successfully"
     })
 })
 
