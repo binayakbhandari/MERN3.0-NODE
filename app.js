@@ -22,19 +22,22 @@ app.post("/blog",upload.single('image'), async (req, res)=>{
     const {title, subtitle, description} = req.body
     // console.log(req.body)
     // console.log(req.file)
-    const filename = req.file.filename
+    let filename;
+    if(req.file){
+        const filename = req.file.filename
+    }
 
     if(!title || !subtitle || !description){
         return res.status(400).json({
-            message : "Please provide title, subtitle, description or image"
+            message : "Please provide title, subtitle, description"
         })
     }
 
     await Blog.create({
         title: title,
         subtitle: subtitle,
-        description: description,
-        image: filename
+        description: description
+        // image: filename
     })
 
     res.status(200).json({
@@ -84,25 +87,25 @@ app.delete("/blog/:id",async (req,res)=>{
     })
 })
 
-// API to edit blgo
-app.patch("/blog/:id",upload.single('image'), async (req,res)=>{
+// API to edit blog
+app.patch('/blog/:id',upload.single('image'),async (req,res)=>{
     const id = req.params.id
     const {title,subtitle,description} = req.body
     let imageName;
-
     if(req.file){
         imageName = req.file.filename
-        const blog = Blog.findById(id)
+        const blog = await Blog.findById(id)
         const oldImage = blog.image
-        fs.unlink(`./storage/${imageName}`, (err)=>{
+
+        fs.unlink(`./storage/${oldImage}`,(err)=>{
             if(err){
                 console.log(err)
-            }
-            else{
+            }else{
                 console.log("File deleted successfully")
             }
         })
     }
+
     await Blog.findByIdAndUpdate(id,{
         title : title,
         subtitle : subtitle,
